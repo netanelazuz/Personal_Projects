@@ -98,18 +98,21 @@ function Gui() {
        Font = [System.Drawing.Font]::new("Arial", 10)
     }
 
+    # Add current user's label.
     $mainForm.Controls.Add($currentLabel)
 
+    # Display current username after current user's label.
     $currentUsernameLabel = [System.Windows.Forms.Label] @{
         Text = $currentUsername
         Location = [System.Drawing.Point]::new(10 + $currentLabel.Width, 10)
-        size = [System.Drawing.size]::new(300,15)
         Font = [System.Drawing.Font]::new("Arial", 10)
         ForeColor = [System.Drawing.Color]::Black
     }
+
+    # Add current username to main form.
     $mainForm.Controls.Add($currentUsernameLabel)
 
-    # ListView for selected users with checkboxes
+    # ListView for selected users with checkboxes.
     $listView = [System.Windows.Forms.ListView] @{
         Location = [System.Drawing.Point]::new(10, 40)
         Size = [System.Drawing.Size]::new(300, 200)
@@ -122,8 +125,11 @@ function Gui() {
 
     # Add columns for usernames and status
     [void]$listView.Columns.Add("Usernames", 150)
-    [void]$listView.Columns.Add("Status", 100)  # Added a column for status
 
+    # Add column for status
+    [void]$listView.Columns.Add("Status", 100) 
+
+    # Add listview to mainform
     $mainForm.Controls.Add($listView)
 
     # Button to check all users
@@ -192,10 +198,10 @@ function Gui() {
     })
 
    
-    <#
+    
     # Search bar textbox
     $searchTextbox = [System.Windows.Forms.TextBox] @{
-      Location = [System.Drawing.Point]::new(430, 10)
+      Location = [System.Drawing.Point]::new(350, 10)
       Size = [System.Drawing.Size]::new(60, 20)
     }
 
@@ -203,7 +209,7 @@ function Gui() {
     $searchLabel = [System.Windows.Forms.Label] @{
         Text = "Search.."
         ForeColor = [System.Drawing.Color]::Gray
-        Location = [System.Drawing.Point]::new(410, 10)
+        Location = [System.Drawing.Point]::new(300, 10)
     }
 
     # Event handler for search bar text changed
@@ -237,7 +243,7 @@ function Gui() {
 
     $mainForm.Controls.Add($searchTextbox)
     $mainForm.Controls.Add($searchLabel)
-    #>
+    
     
     function UpdateListView {
         # Clear the list view
