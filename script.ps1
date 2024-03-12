@@ -54,16 +54,16 @@ function Remove-UserFromRegistry($username) {
     Remove-Item -LiteralPath $registryPath -Force
 }
 
-
+# Function to start the main operation, after clicking 'OK' - selected user names will be passed into the function, this function action is to 1.log them off the system, 2.deleting them from 'C:\' and 3.deleting them from registery editor.
 function Operation($selectedUsers) {
      
      foreach ($selectedUser in $selectedUsers) {
         # Check the selected user's session ID
         $sessionInfo = quser | Where-Object { $_ -match $selectedUser }
-        if ($sessionInfo) {
-            $sessionId = ($sessionInfo -split ' +')[-6]
+        if ($sessionInfo) { # Checking if user is signed-in.
+            $sessionId = ($sessionInfo -split ' +')[-6] # Extracting session id of user from 'quser' command.
             if ($sessionId) {
-                Write-Host "Session ID for user $selectedUser : $sessionId"
+                Write-Host "Session ID for user $selectedUser : $sessionId" # Outputs the session ID of a user for command and control purposes.
                 Logoff-User $sessionId #Logging-off selected user
             } 
             else {
@@ -129,6 +129,28 @@ function Gui() {
     # Add column for status
     [void]$listView.Columns.Add("Status", 100) 
 
+    #function to update listview 
+    function UpdateListView {
+        # Determine if the search bar is empty
+        $isSearchEmpty = $searchTextbox.Text -eq ""
+        
+        # Clear the list view
+        $listView.Items.Clear()
+
+        # Update ListView with user data matching the search criteria
+        foreach ($user in $userData) {
+            if ($isSearchEmpty -or $user.Username -like "*$($searchTextbox.Text)*") {
+                # Add item to ListView only if it's not already present
+                if (-not $listView.Items.ContainsKey.($user.Username)) {
+                    $item = New-Object System.Windows.Forms.ListViewItem($user.Username)
+                    $subItem = $item.SubItems.Add($user.Status)
+                    $item.Checked = $user.IsSelected
+                    $listView.Items.Add($item)
+                }
+            }
+        }
+    }
+
     # Add listview to mainform
     $mainForm.Controls.Add($listView)
 
@@ -145,10 +167,9 @@ function Gui() {
 
     # Button event handler for Check All button
     function HandleCheckAllButtonClick {
-        $selectAll = $checkAllButton.Text -eq "Check All"
-        $userData | ForEach-Object { $_.IsSelected = $selectAll }
-        UpdateListView
-        
+        $selectAll = $checkAllButton.Text -eq "Check All" # Determine the select all button state.
+        $userData | ForEach-Object { $_.IsSelected = $selectAll } 
+        UpdateListView   
     }
 
     # OK button to proceed
@@ -165,8 +186,8 @@ function Gui() {
 
     # Button event handler for OK button
     function HandleOKButtonClick {
-        $selectedUsers = $userData | Where-Object { $_.IsSelected } | Select-Object -ExpandProperty Username
-        Operation $selectedUsers
+        $selectedUsers = $userData | Where-Object { $_.IsSelected } | Select-Object -ExpandProperty Username # Creating a list with all the usernames selected.
+        Operation $selectedUsers # Starting the operation on the seleted users.
         $mainForm.Close()
     }
 
@@ -176,29 +197,13 @@ function Gui() {
         Location = [System.Drawing.Point]::new(320, 120)
         Size = [System.Drawing.Size]::new(100, 30)
     }
+
     $cancelButton.Add_Click({
         $mainForm.Close()
     })
+
     $mainForm.Controls.Add($cancelButton)
-
-    
-
-    foreach ($user in $userData) {
-        if (-not $listView.Items.ContainsKey.($user.Username)) {
-            $item = New-Object System.Windows.Forms.ListViewItem($user.Username)
-            $subItem = $item.SubItems.Add($user.Status)
-            $item.Checked = $user.IsSelected
-            $listView.Items.Add($item)
-        }
-    }
-    
-    # Event handler for individual user checkbox state change
-    $listView.Add_ItemCheck({
-        $userData[$_.Index].IsSelected = $_.NewValue -eq [System.Windows.Forms.CheckState]::Checked
-    })
-
-   
-    
+     
     # Search bar textbox
     $searchTextbox = [System.Windows.Forms.TextBox] @{
       Location = [System.Drawing.Point]::new(350, 10)
@@ -214,49 +219,24 @@ function Gui() {
 
     # Event handler for search bar text changed
     $searchTextbox.Add_TextChanged({
-        if ($searchTextbox.Text -eq "") {
-           $searchLabel.Visible = $true
+        if ($searchTextbox.Text -eq "") { 
+            $searchLabel.Visible = $true
         } 
+
         else {
-            $searchLabel.Visible = $false
-        }
-
-        # Clear the ListView items only if there are changes to search criteria
-        $listView.Items.Clear()
-
-        # Determine if the search bar is empty
-        $isSearchEmpty = $searchTextbox.Text -eq ""
-
-        # Update ListView with user data matching the search criteria
-        foreach ($user in $userData) {
-            if ($isSearchEmpty -or $user.Username -like "*$($searchTextbox.Text)*") {
-                # Add item to ListView only if it's not already present
-                if (-not $listView.Items.ContainsKey.($user.Username)) {
-                    $item = New-Object System.Windows.Forms.ListViewItem($user.Username)
-                    $subItem = $item.SubItems.Add($user.Status)
-                    $item.Checked = $user.IsSelected
-                    $listView.Items.Add($item)
-                }
-            }
-        }
+            $searchLabel.Visible = $false # When starts searching, search label disappears.
+        } 
+        
+        UpdateListView # Filtering Results using UpdateListView function.
     })
 
     $mainForm.Controls.Add($searchTextbox)
     $mainForm.Controls.Add($searchLabel)
-    
-    
-    function UpdateListView {
-        # Clear the list view
-        $listView.Items.Clear()
 
-        # Populate the list view with updated data from $userData
-        foreach ($user in $userData) {
-            $item = New-Object System.Windows.Forms.ListViewItem($user.Username)
-            $subItem = $item.SubItems.Add($user.Status)
-            $item.Checked = $user.IsSelected
-            $listView.Items.Add($item)
-        }
-    }
+    # Event handler for individual user checkbox state change
+    $listView.Add_ItemCheck({
+        $userData[$_.Index].IsSelected = $_.NewValue -eq [System.Windows.Forms.CheckState]::Checked
+    })
 
     # Timer to periodically update GUI
     $timer = New-Object System.Windows.Forms.Timer
