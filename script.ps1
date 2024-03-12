@@ -129,7 +129,7 @@ function Gui() {
     # Add column for status
     [void]$listView.Columns.Add("Status", 100) 
 
-    #function to update listview 
+    # Function to update the list view
     function UpdateListView {
         # Determine if the search bar is empty
         $isSearchEmpty = $searchTextbox.Text -eq ""
@@ -203,7 +203,7 @@ function Gui() {
     })
 
     $mainForm.Controls.Add($cancelButton)
-     
+
     # Search bar textbox
     $searchTextbox = [System.Windows.Forms.TextBox] @{
       Location = [System.Drawing.Point]::new(350, 10)
@@ -232,6 +232,8 @@ function Gui() {
 
     $mainForm.Controls.Add($searchTextbox)
     $mainForm.Controls.Add($searchLabel)
+
+    UpdateListView # Initial users on listview
 
     # Event handler for individual user checkbox state change
     $listView.Add_ItemCheck({
