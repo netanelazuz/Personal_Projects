@@ -311,7 +311,6 @@ function Main() {
     # Define a custom object to store user data
     $Global:userData = @()
 
-
     # Populate user data
     foreach ($username in $usernames) {
         $sessionInfo = psexec \\$ComputerName quser | Where-Object { $_ -match $username }
